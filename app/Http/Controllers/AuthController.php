@@ -40,7 +40,7 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED); // 401
         }
 
-        // authentificated user
+        // authentificated user and payload settings
 
         $user = Auth::user();
         $setPayload = [ 'id' => $user->id,  '_wellow_is_awesome_' => true];
