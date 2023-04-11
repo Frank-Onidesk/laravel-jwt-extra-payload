@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Tymon\JWTAuth\Contracts\Providers\Auth as ProvidersAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTFactory;
+use Tymon\JWTAuth\JWT;
 
 
 class AuthController extends Controller
@@ -24,25 +29,37 @@ class AuthController extends Controller
         ]);
         $credentials = $request->only('email', 'password');
 
-        $token = Auth::attempt($credentials);
-        if (!$token) {
+
+        $login = JWTAuth::attempt($credentials);
+
+        if (!$login) {
+            //$this->refresh();
             return response()->json([
                 'status' => 'error',
                 'message' => 'Login credentials are wrong',
-            ], 401);
+            ], Response::HTTP_UNAUTHORIZED); // 401
         }
 
+        // authentificated user
+
         $user = Auth::user();
+        $setPayload = [ 'id' => $user->id,  '_wellow_is_awesome_' => true];
+
+        $token = JWTAuth::claims($setPayload)->attempt($credentials);
+
+
         return response()->json([
             'status' => 'success',
-            '_wellow_is_awesome_'  => true,
+            'message'  => 'Log in successfully',
             'user' => $user,
             'authorisation' => [
-                'token' => $token,
+                'tooken' => compact('token'),
                 'type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60
             ]
-        ]);
+        ], Response::HTTP_FOUND);
     }
+
 
     public function register(Request $request)
     {
@@ -64,19 +81,24 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
 
-        ]);
+        ],Response::HTTP_CREATED);
 
-        $token = auth('api')->login($user);
+
+        /*$payload = JWTFactory::make([
+            'email' => $request->email,
+            '_wellow_is_awesome_' => true
+            ]
+        );
+
+
+        $token = Auth::login($user); */
 
         return response()->json([
-            'status' => 'register_success',
+            'status' => 'success',
+            'message' => 'Registered successfully',
+            'data' =>  $user
 
-            'authorization' => [
-                'token' => $token,
-                'type' => 'bearer'
-            ]
-
-        ]);
+        ], Response::HTTP_OK);
     }
 
 
@@ -91,11 +113,12 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'user' => Auth::user(),
+            'message' => 'Token refreshed - security level was optimized',
             'authorisation' => [
                 'token' => Auth::refresh(),
                 'type' => 'bearer',
             ]
-        ]);
+        ], Response::HTTP_OK);
     }
 
 
@@ -109,11 +132,37 @@ class AuthController extends Controller
     public function logout()
     {
 
-        Auth::logout();
+       $token =  Auth::logout();
         return  response()->json([
             'status' => 'success',
             'message' => 'Successfully logged out',
+            'token' => $token
 
-        ]);
+        ], Response::HTTP_OK);
+
+        auth('api')->invalidate(true);
+    }
+
+
+
+    public function mood()
+    {
+
+        try {
+            $user = auth('api')->userOrFail();
+            $payload = auth()->payload();
+
+
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            abort(Response::HTTP_NOT_FOUND);
+        }
+
+
+
+        return response()->json([
+            'company_status' => $user,
+            'payload' => $payload->toArray()
+
+        ], Response::HTTP_OK);
     }
 }

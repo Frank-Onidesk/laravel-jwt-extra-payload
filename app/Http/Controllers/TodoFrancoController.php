@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\TodoFranco;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 
 class TodoFrancoController extends Controller
@@ -19,7 +22,7 @@ class TodoFrancoController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
@@ -33,7 +36,7 @@ class TodoFrancoController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response 
+     * @return \Illuminate\Http\Response
      */
     public function create(Request $request)
     {
@@ -44,7 +47,7 @@ class TodoFrancoController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -72,7 +75,6 @@ class TodoFrancoController extends Controller
         return response()->json(
             [
                 'status' => 'success',
-                '_wellow_is_awesome_' => true,
                 'message' => 'Data created successfully',
                 'todo' => $todo,
 
@@ -84,7 +86,7 @@ class TodoFrancoController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
@@ -103,7 +105,7 @@ class TodoFrancoController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit(Request $request, $id)
     {
@@ -116,7 +118,7 @@ class TodoFrancoController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
@@ -163,7 +165,7 @@ class TodoFrancoController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
@@ -174,12 +176,12 @@ class TodoFrancoController extends Controller
                     'message' => 'Record deleted successfully',
                     'record_id' => $id
                 ], 200);
-            }else{
+            } else {
 
-                return response()->json(['message' => 'I was not possible to delete this record Id:'.$id],404);
+                return response()->json(['message' => 'I was not possible to delete this record Id:' . $id], 404);
             }
-        }else{
-            return response()->json(['message' => 'Operation not allowed for record Id:'.$id],402);
+        } else {
+            return response()->json(['message' => 'Operation not allowed for record Id:' . $id], 402);
         }
     }
 }
